@@ -285,7 +285,7 @@ class BrowserSession(BaseModel):
 
 		# Use timeout to prevent indefinite waiting on lock acquisition
 
-		async with asyncio.timeout(60):  # 60 overall second timeout for entire launching process
+		async with asyncio.timeout(200):  # 60 overall second timeout for entire launching process
 			async with self._start_lock:
 				if self.initialized:
 					if self.is_connected():
@@ -1441,6 +1441,35 @@ class BrowserSession(BaseModel):
 				# only wait the 5s extra for potential downloads if they are enabled
 				# TODO: instead of blocking for 5s, we should register a non-block page.on('download') event
 				# and then check if the download has been triggered within the event handler
+
+				# Aggiunta cerchio
+
+				try:
+					await page.evaluate('''(element) => {
+						const rect = element.getBoundingClientRect();
+						const circle = document.createElement('div');
+						circle.style.cssText = `
+							position: fixed;
+							width: 15px;
+							height: 15px;
+							border: 3px solid #ff0000;
+							border-radius: 50%;
+							pointer-events: none;
+							z-index: 999999;
+							left: ${rect.left + rect.width/2 - 10}px;
+							top: ${rect.top + rect.height/2 - 10}px;
+							transition: opacity 0.6s;
+							background: rgba(255, 0, 0, 0.7);
+							box-shadow: 0 0 20px rgba(255, 0, 0, 1), 0 0 40px rgba(255, 0, 0, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
+						`;
+						document.body.appendChild(circle);
+						setTimeout(() => { circle.style.opacity = '0'; }, 100);
+						setTimeout(() => circle.remove(), 700);
+					}''', element_handle)
+				except Exception:
+					pass
+
+
 				if self.browser_profile.downloads_path:
 					try:
 						# Try short-timeout expect_download to detect a file download has been been triggered
