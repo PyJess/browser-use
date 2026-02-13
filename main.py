@@ -20,22 +20,19 @@ async def main():
     #             llm=ChatOpenAI(model="gpt-4.1", temperature=0.1))
 
     agent = Agent(
-        task="""- Navigate to "https://kinto-one-portal-es.tceu-kinto-stg.toyotaconnectedeurope.dev/"
+        task="""- Navigate to "https://www.poste.it/"
         - Accept cookies if present
-        - Select English language
-        - Click Login Button 
-        - Insert username@reply.it as email address
+        - Enter in "Area Personale"
+        - Insert user.name as username
         - Show password
         - Insert Password01! as password
-        - Continue 
-        - Check if Login is successful
-        - If Login is not successful, select Forgot Password
-        - Insert the email address
-        - Continue
+        - Click on "Accedi"
+        - Verify that the login was successful or not
 """,
         browser_session=browser_session,
         llm=ChatOpenAI(model="gpt-4.1"),  
     )
-    await agent.run()
+    history=await agent.run()
+    print(history.model_actions())
 
 asyncio.run(main())
